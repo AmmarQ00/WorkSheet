@@ -1,1 +1,5 @@
 streamlit
+groq
+python-docx
+streamlit-authenticator
+pyyaml
