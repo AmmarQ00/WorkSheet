@@ -644,7 +644,7 @@ elif st.session_state.get("authentication_status") is False:
 
 elif st.session_state.get("authentication_status") is None:
    
-if st.button("نسيت كلمة المرور؟"):
+  if st.button("نسيت كلمة المرور؟"):
     email = st.text_input("أدخل إيميلك")
     if st.button("إرسال كلمة مرور جديدة"):
         if email in config['pre_authorized']['emails']:
