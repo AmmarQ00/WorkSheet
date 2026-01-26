@@ -21,10 +21,23 @@ from email.mime.text import MIMEText
 # ── الإعدادات الفنية ──
 st.set_page_config(page_title="مساعد المعلم", layout="wide")
 
+# تحسين التصميم بألوان هادئة (أزرق فاتح، أخضر، رمادي)
+st.markdown("""
+<style>
+    .stApp { background-color: #f0f9ff; }
+    .stButton>button { background-color: #3b82f6; color: white; border-radius: 8px; }
+    .stButton>button:hover { background-color: #2563eb; }
+    h1, h2, h3 { color: #1e40af; text-align: center; }
+    .sidebar .sidebar-content { background-color: #d1fae5; padding: 20px; border-radius: 10px; }
+    .stTextInput>div>div>input { background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; }
+    .stExpander { border: 1px solid #e5e7eb; border-radius: 8px; }
+</style>
+""", unsafe_allow_html=True)
+
 # مفتاح API
 MY_API_KEY = "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"
 
-# ── ملف config.yaml ──
+# ── ملف config.yaml لنظام الدخول ──
 CONFIG_FILE = 'config.yaml'
 
 def load_config():
@@ -50,12 +63,19 @@ authenticator = stauth.Authenticate(
     config['cookie']['expiry_days']
 )
 
-# ── تسجيل الدخول العادي ──
+# ── إضافة شعار رسمي للمنصة في أعلى الصفحة ──
+st.image("https://www.moe.gov.sa/ar/PublishingImages/logo.png", width=300, caption="وزارة التعليم - المملكة العربية السعودية")
+
+# ── عرض صفحة تسجيل الدخول ──
 authenticator.login()
 
-# ── التحقق من حالة الدخول عبر session_state ──
+# ── التحقق من حالة الدخول ──
 if st.session_state.get("authentication_status"):
-   
+    st.title("مساعد المعلم")
+
+    # ── وضع اسم المعلم تلقائيًا في حقل "اسم المعلم" بعد تسجيل الدخول ──
+    if 'teacher_name' not in st.session_state or st.session_state.teacher_name == "":
+        st.session_state.teacher_name = st.session_state.get("name", "")
 
     # ── حفظ القيم الافتراضية في الجلسة (فارغة افتراضيًا) ──
     if 'edu_admin' not in st.session_state:
@@ -64,8 +84,6 @@ if st.session_state.get("authentication_status"):
         st.session_state.edu_sector = ""
     if 'school_name' not in st.session_state:
         st.session_state.school_name = ""
-    if 'teacher_name' not in st.session_state:
-        st.session_state.teacher_name = ""
     if 'subject_name' not in st.session_state:
         st.session_state.subject_name = "الرياضيات"
 
@@ -315,7 +333,8 @@ if st.session_state.get("authentication_status"):
 
     SUBJECTS = [
         "الرياضيات", "العلوم", "لغتي", "الدراسات الإسلامية", "الاجتماعيات", 
-        "اللغة الإنجليزية", "التربية الفنية", "التربية البدنية", "المجالات"
+        "اللغة الإنجليزية", "التربية الفنية", "التربية البدنية", "المجالات",
+        "العلوم", "اللغة العربية", "الإنجليزية"  # إضافة مواد إضافية
     ]
 
     DIFFICULTY_LEVELS = ["سهل", "متوسط", "صعب", "تحدي"]
@@ -389,6 +408,10 @@ if st.session_state.get("authentication_status"):
     n_mcq  = col2.number_input("عدد (اختياري)"    , 0, 10, 3)
     n_essay= col3.number_input("عدد (مقالي)"      , 0, 10, 2)
     n_fill = col4.number_input("عدد (ملء فراغات)" , 0, 10, 3)
+
+    # ── مربع نص لإدخال نصوص من خارج الذكاء الاصطناعي ──
+    st.header("إدخال نصوص إضافية")
+    custom_text = st.text_area("أدخل نصوص إضافية أو تعليمات للورقة (اختياري)")
 
     if st.button("🚀 إنشاء الورقة"):
         if not lesson:
@@ -604,13 +627,44 @@ if st.session_state.get("authentication_status"):
                         st.write(f"{i}- {q}")
 
                 st.info("هذه معاينة نصية مبسطة. الملف النهائي (Word) يحتوي على تنسيق أفضل.")
-                authenticator.logout("تسجيل الخروج", "sidebar")
 
-        elif st.session_state.get("authentication_status") is False:
-                  st.error("اسم المستخدم أو كلمة المرور غير صحيحة")
+    authenticator.logout("تسجيل الخروج", "sidebar")
 
+elif st.session_state.get("authentication_status") is False:
+    st.error("اسم المستخدم أو كلمة المرور غير صحيحة")
 
-# ── تسجيل معلم جديد فقط قبل الدخول (قائمة منسدلة) ──
+elif st.session_state.get("authentication_status") is None:
+    # ── حذف العبارة الصفراء (الرجاء إدخال اسم المستخدم وكلمة المرور) ──
+    # لا شيء هنا، يظهر فورم الدخول فقط
+
+# ── استعادة كلمة المرور آليًا ──
+    if st.button("نسيت كلمة المرور؟"):
+     email = st.text_input("أدخل إيميلك")
+    if st.button("إرسال كلمة مرور جديدة"):
+        if email in config['pre_authorized']['emails']:
+            new_password = ''.join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=10))
+            hashed_pw = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt(12)).decode('utf-8')
+            for username in config['credentials']['usernames']:
+                if config['credentials']['usernames'][username].get('email') == email:
+                    config['credentials']['usernames'][username]['password'] = hashed_pw
+                    save_config(config)
+                    msg = MIMEText(f"كلمة المرور الجديدة: {new_password}")
+                    msg['Subject'] = 'استعادة كلمة المرور - مساعد المعلم'
+                    msg['From'] = 'your_email@gmail.com'
+                    msg['To'] = email
+                    server = smtplib.SMTP('smtp.gmail.com', 587)
+                    server.starttls()
+                    server.login("your_email@gmail.com", "your_app_password")
+                    server.sendmail("your_email@gmail.com", email, msg.as_string())
+                    server.quit()
+                    st.success("تم إرسال كلمة مرور جديدة إلى إيميلك!")
+                    break
+            else:
+                st.error("الإيميل غير مسجل")
+        else:
+            st.error("الإيميل غير مسجل")
+
+# ── تسجيل معلم جديد كقائمة منسدلة (يختفي بعد الدخول) ──
 if not st.session_state.get("authentication_status"):
     with st.expander("تسجيل معلم جديد"):
         col1, col2 = st.columns(2)
