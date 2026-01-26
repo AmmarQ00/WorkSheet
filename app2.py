@@ -130,7 +130,7 @@ if st.session_state.get("authentication_status"):
         section.left_margin = Inches(0.9)
         section.right_margin = Inches(0.9)
         
-        if paper_size == 'A3':
+        if paper_size = 'A3':
             section.page_width = Inches(11.69)
             section.page_height = Inches(16.54)
         else:
@@ -643,8 +643,11 @@ elif st.session_state.get("authentication_status") is False:
     st.error("اسم المستخدم أو كلمة المرور غير صحيحة")
 
 elif st.session_state.get("authentication_status") is None:
-   
-  if st.button("نسيت كلمة المرور؟"):
+    # ── حذف العبارة الصفراء (الرجاء إدخال اسم المستخدم وكلمة المرور) ──
+    # لا شيء هنا، يظهر فورم الدخول فقط
+
+# ── استعادة كلمة المرور آليًا ──
+if st.button("نسيت كلمة المرور؟"):
     email = st.text_input("أدخل إيميلك")
     if st.button("إرسال كلمة مرور جديدة"):
         if email in config['pre_authorized']['emails']:
@@ -669,3 +672,5 @@ elif st.session_state.get("authentication_status") is None:
                 st.error("الإيميل غير مسجل")
         else:
             st.error("الإيميل غير مسجل")
+
+# ── تسجيل معلم جديد كقائمة منسدلة (يختفي بعد الدخول)
