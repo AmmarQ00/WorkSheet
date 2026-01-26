@@ -119,7 +119,7 @@ if st.session_state.get("authentication_status"):
             pgBorders.append(border_el)
         sec.append(pgBorders)
 
-    def create_docx(info, questions_data, style, title_color=RGBColor(0, 0, 0), paper_size='A4', orientation='portrait', logo_bytes=None, suggested_time=None):
+    def create_docx(info, questions_data, style, title_color=RGBColor(0, 0, 0), paper_size='A4', orientation='portrait', logo_bytes=None, suggested_time=None, custom_text=''):
         doc = Document()
         if style['has_border']: 
             add_page_border(doc, str(style['border_thickness']))
@@ -130,7 +130,7 @@ if st.session_state.get("authentication_status"):
         section.left_margin = Inches(0.9)
         section.right_margin = Inches(0.9)
         
-        if paper_size == 'A3':
+        if paper_size = 'A3':
             section.page_width = Inches(11.69)
             section.page_height = Inches(16.54)
         else:
@@ -188,6 +188,15 @@ if st.session_state.get("authentication_status"):
 
         p = doc.add_paragraph("\nاسم الطالب: ............................................................")
         make_rtl(p)
+
+        # إضافة النصوص الإضافية المدخلة يدويًا
+        if custom_text:
+            p = doc.add_paragraph(custom_text)
+            make_rtl(p)
+            p.alignment = WD_ALIGN_PARAGRAPH.CENTER
+            run = p.runs[0]
+            run.bold = True
+            run.font.size = Pt(14)
 
         def add_section_title(title_ar, title_en):
             head = doc.add_paragraph()
@@ -334,7 +343,7 @@ if st.session_state.get("authentication_status"):
     SUBJECTS = [
         "الرياضيات", "العلوم", "لغتي", "الدراسات الإسلامية", "الاجتماعيات", 
         "اللغة الإنجليزية", "التربية الفنية", "التربية البدنية", "المجالات",
-        "العلوم", "اللغة العربية", "الإنجليزية"  # إضافة مواد إضافية
+        "العلوم", "اللغة العربية", "الإنجليزية"  # دعم مواد إضافية
     ]
 
     DIFFICULTY_LEVELS = ["سهل", "متوسط", "صعب", "تحدي"]
@@ -500,7 +509,7 @@ if st.session_state.get("authentication_status"):
                     'lesson_period': lesson_period
                 }
 
-                doc_file = create_docx(info, final_data, style, title_color, paper_size, orientation, logo_bytes, suggested_time)
+                doc_file = create_docx(info, final_data, style, title_color, paper_size, orientation, logo_bytes, suggested_time, custom_text)
                 st.session_state.preview_doc = doc_file
 
                 st.session_state.question_bank.append({
@@ -563,7 +572,7 @@ if st.session_state.get("authentication_status"):
                 'lesson_period': lesson_period
             }
 
-            doc_file = create_docx(info, final_data, style, title_color, paper_size, orientation, logo_bytes, suggested_time)
+            doc_file = create_docx(info, final_data, style, title_color, paper_size, orientation, logo_bytes, suggested_time, custom_text)
 
             col1, col2 = st.columns(2)
 
@@ -634,12 +643,9 @@ elif st.session_state.get("authentication_status") is False:
     st.error("اسم المستخدم أو كلمة المرور غير صحيحة")
 
 elif st.session_state.get("authentication_status") is None:
-    # ── حذف العبارة الصفراء (الرجاء إدخال اسم المستخدم وكلمة المرور) ──
-    # لا شيء هنا، يظهر فورم الدخول فقط
-
-# ── استعادة كلمة المرور آليًا ──
-    if st.button("نسيت كلمة المرور؟"):
-     email = st.text_input("أدخل إيميلك")
+   
+if st.button("نسيت كلمة المرور؟"):
+    email = st.text_input("أدخل إيميلك")
     if st.button("إرسال كلمة مرور جديدة"):
         if email in config['pre_authorized']['emails']:
             new_password = ''.join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=10))
@@ -663,33 +669,3 @@ elif st.session_state.get("authentication_status") is None:
                 st.error("الإيميل غير مسجل")
         else:
             st.error("الإيميل غير مسجل")
-
-# ── تسجيل معلم جديد كقائمة منسدلة (يختفي بعد الدخول) ──
-if not st.session_state.get("authentication_status"):
-    with st.expander("تسجيل معلم جديد"):
-        col1, col2 = st.columns(2)
-        with col1:
-            new_name = st.text_input("اسم المعلم")
-            new_email = st.text_input("الإيميل")
-        with col2:
-            new_username = st.text_input("اسم المستخدم")
-            new_password = st.text_input("كلمة المرور", type="password")
-
-        if st.button("تسجيل المعلم"):
-            if new_name and new_email and new_username and new_password:
-                # تشفير كلمة المرور
-                hashed_pw = bcrypt.hashpw(new_password.encode('utf-8'), bcrypt.gensalt(12)).decode('utf-8')
-
-                # إضافة المعلم الجديد إلى config
-                config['credentials']['usernames'][new_username] = {
-                    'name': new_name,
-                    'password': hashed_pw,
-                    'email': new_email
-                }
-                config['pre_authorized']['emails'].append(new_email)
-
-                save_config(config)
-
-                st.success(f"تم تسجيل المعلم {new_name} بنجاح! يمكنك الآن تسجيل الدخول باسم المستخدم: {new_username}")
-            else:
-                st.error("يرجى ملء جميع الحقول")
