@@ -24,13 +24,41 @@ st.set_page_config(page_title="مساعد المعلم", layout="wide")
 # تحسين التصميم بألوان هادئة (أزرق فاتح، أخضر، رمادي)
 st.markdown("""
 <style>
-    .stApp { background-color: #f0f9ff; }
-    .stButton>button { background-color: #3b82f6; color: white; border-radius: 8px; }
-    .stButton>button:hover { background-color: #2563eb; }
-    h1, h2, h3 { color: #1e40af; text-align: center; }
-    .sidebar .sidebar-content { background-color: #d1fae5; padding: 20px; border-radius: 10px; }
-    .stTextInput>div>div>input { background-color: #f3f4f6; border: 1px solid #d1d5db; border-radius: 6px; }
-    .stExpander { border: 1px solid #e5e7eb; border-radius: 8px; }
+    section[data-testid="stAppViewContainer"] {
+        background-color: #e6f0ff !important;  /* خلفية زرقاء فاتحة قوية */
+    }
+    .stAppViewContainer > div:first-child {
+        background-color: #e6f0ff !important;
+    }
+    .stApp > div:first-child {
+        background-color: #e6f0ff !important;
+    }
+    .stSidebar {
+        background-color: #d1e7ff !important;
+    }
+    .stButton > button {
+        background-color: #3b82f6 !important;
+        color: white !important;
+        border-radius: 8px !important;
+    }
+    .stButton > button:hover {
+        background-color: #2563eb !important;
+    }
+    h1, h2, h3 {
+        color: #1e40af !important;
+        text-align: center !important;
+    }
+    .stExpander {
+        border: 1px solid #bfdbfe !important;
+        border-radius: 8px !important;
+    }
+    .welcome {
+        font-size: 28px !important;
+        color: #1e40af !important;
+        text-align: center !important;
+        margin: 30px 0 !important;
+        font-weight: bold !important;
+    }
 </style>
 """, unsafe_allow_html=True)
 
